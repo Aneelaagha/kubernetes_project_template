@@ -4,4 +4,3 @@ resources:
   - ../../base
 patches:
   - path: frontend-service-patch.yaml
-  - path: frontend-configmap-patch.yaml

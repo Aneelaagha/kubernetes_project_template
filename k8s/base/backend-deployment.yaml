@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: sample-app
+  namespace: app
   labels:
     app.kubernetes.io/name: backend
 spec:
@@ -27,13 +27,6 @@ spec:
                 name: backend-config
             - secretRef:
                 name: backend-secret
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 300m
-              memory: 256Mi
           livenessProbe:
             httpGet:
               path: /healthz

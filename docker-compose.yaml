@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    environment:
+      APP_NAME: backend
+      APP_ENV: compose
+      APP_VERSION: 0.1.0
+      GREETING: Hello from backend via Docker Compose
+      API_TOKEN: local-token
+    networks:
+      - network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    environment:
+      FRONTEND_API_ORIGIN: http://backend:8000
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - network
+
+networks:
+  network:
+    name: network

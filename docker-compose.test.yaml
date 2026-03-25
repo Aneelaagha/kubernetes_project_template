@@ -1,0 +1,10 @@
+services:
+  backend:
+    environment:
+      APP_ENV: test
+      GREETING: Hello from backend via Docker Compose test override
+      API_TOKEN: test-token
+
+  frontend:
+    environment:
+      FRONTEND_API_ORIGIN: http://backend:8000

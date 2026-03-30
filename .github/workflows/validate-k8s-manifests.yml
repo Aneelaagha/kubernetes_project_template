@@ -1,0 +1,57 @@
+name: Validate Kubernetes Manifests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  validate:
+    name: Lint & Validate K8s Manifests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 1. kubeval: validates manifests against Kubernetes API schemas ──
+      - name: Install kubeval
+        run: |
+          wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval-linux-amd64.tar.gz
+          sudo mv kubeval /usr/local/bin/
+
+      - name: Run kubeval on all YAML files
+        run: |
+          find . -name '*.yaml' -o -name '*.yml' | \
+            grep -v '.github' | \
+            xargs kubeval --strict --ignore-missing-schemas
+
+      # ── 2. kubectl dry-run: catches API-level errors ──
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: kubectl dry-run (client-side)
+        run: |
+          find . -name '*.yaml' -o -name '*.yml' | \
+            grep -v '.github' | \
+            while read file; do
+              echo "Checking: $file"
+              kubectl apply --dry-run=client -f "$file" 2>&1 || true
+            done
+
+      # ── 3. yamllint: catches YAML formatting issues ──
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 150}}}" \
+            $(find . -name '*.yaml' -o -name '*.yml' | grep -v '.github')

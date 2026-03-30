@@ -34,15 +34,11 @@ jobs:
               -ignore-missing-schemas \
               -kubernetes-version 1.29.0
 
-      # ── 2. kubectl + Kustomize dry-run: validates the full overlay ──
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      - name: kubectl dry-run via Kustomize overlay
+      # ── 2. Render Kustomize overlay and validate with kubeconform ──
+      - name: Render Kustomize overlay and validate
         run: |
-          kubectl apply --dry-run=client --validate=false -k k8s/overlays/local
+          kubectl kustomize k8s/overlays/local | \
+            kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.29.0
 
       # ── 3. yamllint: catches YAML formatting issues in k8s/ only ──
       - name: Install yamllint
